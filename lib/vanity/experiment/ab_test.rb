@@ -325,6 +325,23 @@ module Vanity
         choice = outcome ? alts[outcome.id] : (best && best.probability >= probability ? best : nil)
         Struct.new(:alts, :best, :base, :least, :choice).new(alts, best, base, least, choice)
       end
+      
+      def different?(score)
+        require 'abanalyzer'
+        
+        values = score.alts.inject({}) do |values, alternative|
+          alternative_data = {:participations => alternative.participants, :conversions => alternative.converted}
+          values.merge!({alternative.name.to_sym => alternative_data})
+          values
+        end
+
+        begin
+          ABAnalyzer::ABTest.new(values).different?
+        rescue ABAnalyzer::InsufficientDataError
+          ::Rails.logger.error "vanity: caught ABAnalyzer::InsufficientDataError exception from ABAnalyzer"
+          false
+        end
+      end
 
       # Use the result of #score to derive a conclusion.  Returns an
       # array of claims.

@@ -1,7 +1,6 @@
 <% score = experiment.score %>
 <table>
-  <caption>
-    <%= experiment.conclusion(score).join(" ") %></caption>
+  <caption>Different? <%= experiment.different?(score) %></caption>
   <% score.alts.each do |alt| %>
     <tr class="<%= "choice" if score.choice == alt %>">
       <td class="option"><%= alt.name.gsub(/^o/, "O") %>:</td>
