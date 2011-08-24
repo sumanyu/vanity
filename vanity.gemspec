@@ -21,4 +21,5 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = '>= 1.8.7'
   spec.add_dependency "redis", "~>2.0"
   spec.add_dependency "redis-namespace", "~>0.7"
+  spec.add_dependency "abanalyzer", "0.0.4"
 end
