@@ -16,6 +16,7 @@ end
 
 require "vanity/version"
 require "vanity/backport" if RUBY_VERSION < "1.9"
+require "vanity/array_extensions"
 # Metrics.
 require "vanity/metric/base"
 require "vanity/metric/active_record"

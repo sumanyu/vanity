@@ -1,6 +1,14 @@
 <% score = experiment.score %>
 <table>
-  <caption>Different? <%= experiment.different?(score) %></caption>
+  <caption>
+    <% experiment.statistical_results(score).each do |result| %>
+      <% if result[:different] %>
+        <p class='different'><%= result[:name] %> is different with p-value: <%= result[:p_value] %></p>
+      <% else %>
+        <p class='not_different'><%= result[:name] %> is not different with p-value: <%= result[:p_value] %></p>
+      <% end %>
+    <% end %>
+  </caption>
   <% score.alts.each do |alt| %>
     <tr class="<%= "choice" if score.choice == alt %>">
       <td class="option"><%= alt.name.gsub(/^o/, "O") %>:</td>

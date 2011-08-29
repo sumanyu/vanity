@@ -301,21 +301,45 @@ module Vanity
         Struct.new(:alts, :best, :base, :least, :choice).new(alts, best, base, least, choice)
       end
       
-      def different?(score)
+      def combinations(alternatives)
+        alternatives.inject([]) do |results, alternative|
+          results << alternative.name.to_sym
+          results
+        end.combinations
+      end
+      
+      def statistical_results(score)
         require 'abanalyzer'
         
-        values = score.alts.inject({}) do |values, alternative|
-          alternative_data = {:participations => alternative.participants, :conversions => alternative.converted}
-          values.merge!({alternative.name.to_sym => alternative_data})
-          values
-        end
+        final_results = []
+        score.alts.combinations.each do |combinations|
+          results = combinations.inject([]) do |results, alternative|
+            
+            data = {:no_conversion => (alternative.participants - alternative.converted), :conversion => alternative.converted}
+            v = {}
+            v[alternative.name.to_sym] = data
+            tester = ABAnalyzer::ABTest.new(v)
 
-        begin
-          ABAnalyzer::ABTest.new(values).different?
-        rescue ABAnalyzer::InsufficientDataError
-          ::Rails.logger.error "vanity: caught ABAnalyzer::InsufficientDataError exception from ABAnalyzer"
-          false
+            different = begin
+              tester.different?
+            rescue ABAnalyzer::InsufficientDataError
+              ::Rails.logger.error "vanity: caught ABAnalyzer::InsufficientDataError exception from ABAnalyzer"
+              false
+            end
+            
+            p_value = begin
+              tester.gtest_p
+            rescue ABAnalyzer::InsufficientDataError
+              ::Rails.logger.error "vanity: caught ABAnalyzer::InsufficientDataError exception from ABAnalyzer"
+              0.0
+            end
+            results << {:name => alternative.name, :different => different, :p_value => p_value}
+            results
+          end
+          
+          final_results = results
         end
+        final_results
       end
 
       # Use the result of #score to derive a conclusion.  Returns an
