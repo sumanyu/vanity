@@ -308,6 +308,12 @@ module Vanity
         end.combinations
       end
       
+      def combination_name(combinations)
+        names = []
+        combinations.each{|c| names << c.name}
+        "Combinations: #{names.join(', ')}"
+      end
+      
       def statistical_results(score)
         require 'abanalyzer'
         
@@ -333,11 +339,11 @@ module Vanity
               ::Rails.logger.error "vanity: caught ABAnalyzer::InsufficientDataError exception from ABAnalyzer"
               0.0
             end
-            results << {:name => alternative.name, :different => different, :p_value => p_value}
+            results << {:name => combination_name(combinations), :different => different, :p_value => p_value}
             results
           end
           
-          final_results = results
+          final_results = results.uniq
         end
         final_results
       end
